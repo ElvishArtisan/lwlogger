@@ -6,3 +6,5 @@
 	* Implemented basic GPIO logging.
 2016-12-26 Fred Gleason <fredg@paravelsystems.com>
 	* Enabled target 'make rpm'.
+2016-12-26 Fred Gleason <fredg@paravelsystems.com>
+	* Incremented the package version to 0.6.0.

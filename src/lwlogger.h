@@ -26,6 +26,8 @@
 
 #include <sy/sygpio_server.h>
 
+#include "config.h"
+
 #define LWLOGGER_USAGE "[options]\n"
 
 class MainObject : public QObject
@@ -33,6 +35,14 @@ class MainObject : public QObject
  Q_OBJECT;
  public:
   MainObject(QObject *parent=0);
+
+ private slots:
+  void  gpioReceivedData(SyGpioEvent *e);
+
+ private:
+  void Log(const QString &dirname,const QString &msg) const;
+  SyGpioServer *main_gpio_server;
+  Config *main_config;
 };
 
 

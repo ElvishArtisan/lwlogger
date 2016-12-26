@@ -30,7 +30,8 @@ moc_%.cpp:	%.h
 
 sbin_PROGRAMS = lwlogger
 
-dist_lwlogger_SOURCES = lwlogger.cpp lwlogger.h
+dist_lwlogger_SOURCES = config.cpp config.h\
+                        lwlogger.cpp lwlogger.h
 
 nodist_lwlogger_SOURCES = moc_lwlogger.cpp
 

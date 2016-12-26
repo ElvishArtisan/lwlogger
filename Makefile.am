@@ -24,7 +24,8 @@ if DOCBOOK_AM
   DOCBOOK_AM_OPT = docs
 endif
 
-SUBDIRS = $(DOCBOOK_AM_OPT) src
+SUBDIRS = $(DOCBOOK_AM_OPT) conf \
+          src
 
 install-exec-local:	
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system

@@ -19,13 +19,48 @@
 //   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
+#include <stdio.h>
+#include <syslog.h>
+
 #include <QCoreApplication>
+#include <QDateTime>
 
 #include "lwlogger.h"
 
 MainObject::MainObject(QObject *parent)
   : QObject(parent)
 {
+  main_config=new Config();
+  main_config->load();
+
+  main_gpio_server=new SyGpioServer(new SyRouting(0,0),this);
+  connect(main_gpio_server,SIGNAL(gpioReceived(SyGpioEvent *)),
+	  this,SLOT(gpioReceivedData(SyGpioEvent *)));
+}
+
+
+void MainObject::gpioReceivedData(SyGpioEvent *e)
+{
+  if(main_config->logActive(e)) {
+    Log(main_config->logDir(e),main_config->logLine(e));
+  }
+}
+
+
+void MainObject::Log(const QString &dirname,const QString &msg) const
+{
+  FILE *f=NULL;
+  QDateTime now=QDateTime::currentDateTime();
+  QString filename=dirname+"/"+now.toString("yyyy-MM-dd")+".txt";
+
+  if((f=fopen(filename.toUtf8(),"a"))==NULL) {
+    syslog(LOG_WARNING,"unable to open log file \"%s\"",
+	   (const char *)filename.toUtf8());
+    return;
+  }
+  fprintf(f,"%s: %s\n",(const char *)now.toString("hh:mm:ss").toUtf8(),
+	  (const char *)msg.toUtf8());
+  fclose(f);
 }
 
 

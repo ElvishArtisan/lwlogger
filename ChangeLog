@@ -2,3 +2,5 @@
 	* Initial package creation.
 2016-12-26 Fred Gleason <fredg@paravelsystems.com>
 	* Updated 'README'.
+2016-12-26 Fred Gleason <fredg@paravelsystems.com>
+	* Implemented basic GPIO logging.

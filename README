@@ -1,7 +1,9 @@
-This is the README file for the lwnetrouter package.
+This is the README file for the lwlogger package.
 
 This software comes with ABSOLUTELY NO WARRANTY.  See the file 'COPYING' for
 details.
 
-See the file 'INSTALL' for instructions on building lwpath from source.
+See the file 'INSTALL' for instructions on building lwlogger from source.
+
+Lwlogger is a utility for logging GPIO events on a LiveWire AoIP network.
 

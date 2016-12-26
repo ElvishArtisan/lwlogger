@@ -1,6 +1,6 @@
-## lwnetrouter.spec.in
+## lwlogger.spec.in
 ##
-##    Radio network facility router system
+##    GPIO logger for LiveWire.
 ##
 ##    Copyright (C) 2016  Fred Gleason <fredg@paravelsystems.com>
 ##
@@ -19,29 +19,20 @@
 ##    Boston, MA  02111-1307  USA
 ##
 
-Summary: Radio network facility router system
-Name: lwnetrouter
+Summary: GPIO logger for LiveWire networks
+Name: lwlogger
 Version: @VERSION@
 Release: @RPM_RELEASE@%{?dist}
 License: GPLv2
 Packager: Fred Gleason <fredg@paravelsystems.com>
 Group: Productivity/Multimedia/Other
 Source: %{name}-@VERSION@.tar.gz
-BuildRequires: qt-devel
+BuildRequires: qt-devel switchyard-devel
 BuildRoot: /var/tmp/%{name}-@VERSION@
 
 
-%package gui
-Summary: GUI control panels for LWNetRouter
-Group: Productivity/Multimedia/Other
-
-
 %description
-LWNetRouter is a centralized audio routing system for radio head-end network.
-
-
-%description gui
-GUI control panels for use the LWNetRouter.
+LWLogger is a utility for logging LiveWire GPIO events.
 
 
 %prep
@@ -67,8 +58,8 @@ fi
 if test "@DISTRO@" = "redhat" ; then
   PACKAGE_DOC_DIR=%_docdir/%{name}-@VERSION@
 fi
-if test ! -f /etc/lwnetrouter.conf ; then
-    cp $PACKAGE_DOC_DIR/lwnetrouter-sample.conf /etc/lwnetrouter.conf
+if test ! -f /etc/lwlogger.conf ; then
+    cp $PACKAGE_DOC_DIR/lwlogger-sample.conf /etc/lwlogger.conf
 fi
 if [ -x %{_bindir}/systemctl ] ; then
   systemctl daemon-reload
@@ -77,7 +68,7 @@ fi
 
 %preun
 if [ -x %{_bindir}/systemctl ] ; then
-  systemctl stop lwnetrouter
+  systemctl stop lwlogger
 fi
 
 
@@ -87,45 +78,23 @@ if [ -x %{_bindir}/systemctl ] ; then
 fi
 
 
-%post gui
-if test "@DISTRO@" = "suse" ; then
-  PACKAGE_DOC_DIR=%_docdir/lwrouter-gui
-fi
-if test "@DISTRO@" = "redhat" ; then
-  PACKAGE_DOC_DIR=%_docdir/lwnetrouter-gui-@VERSION@
-fi
-if test ! -f /etc/lwnetrouter.conf ; then
-    cp $PACKAGE_DOC_DIR/lwnetrouter-sample.conf /etc/lwnetrouter.conf
-fi
-if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
-  %{_bindir}/gtk-update-icon-cache -f --quiet %{_datadir}/icons/hicolor || :
-fi
-
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 
 %files
 %defattr(-,root,root)
-%{_sbindir}/lwnetrouterd
-/usr/lib/systemd/system/lwnetrouter.service
+%{_sbindir}/lwlogger
+/usr/lib/systemd/system/lwlogger.service
 %dir /var/cache/aoip
 %doc AUTHORS
 %doc ChangeLog
 %doc COPYING 
 %doc NEWS 
 %doc README 
-%doc conf/lwnetrouter-sample.conf
-
-
-%files gui
-%{_bindir}/lwnetdelay
-%{_datadir}/icons/hicolor/48x48/apps/lwnetdelay.png
-%{_datadir}/applications/lwnetdelay.desktop
-%doc conf/lwnetrouter-sample.conf
+%doc conf/lwlogger-sample.conf
 
 
 %changelog
-* Sat Nov 26 2016 Fred Gleason <fredg@paravelsystems.com>
+* Mon Dec 26 2016 Fred Gleason <fredg@paravelsystems.com>
 -- Initial RPM creation.

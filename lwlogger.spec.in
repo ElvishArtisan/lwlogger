@@ -1,0 +1,131 @@
+## lwnetrouter.spec.in
+##
+##    Radio network facility router system
+##
+##    Copyright (C) 2016  Fred Gleason <fredg@paravelsystems.com>
+##
+##    This program is free software; you can redistribute it and/or modify
+##    it under the terms of version 2 of the GNU General Public License as
+##    published by the Free Software Foundation;
+##
+##    This program is distributed in the hope that it will be useful,
+##    but WITHOUT ANY WARRANTY; without even the implied warranty of
+##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##    GNU General Public License for more details.
+##
+##    You should have received a copy of the GNU General Public License
+##    along with this program; if not, write to the Free Software
+##    Foundation, Inc., 59 Temple Place, Suite 330, 
+##    Boston, MA  02111-1307  USA
+##
+
+Summary: Radio network facility router system
+Name: lwnetrouter
+Version: @VERSION@
+Release: @RPM_RELEASE@%{?dist}
+License: GPLv2
+Packager: Fred Gleason <fredg@paravelsystems.com>
+Group: Productivity/Multimedia/Other
+Source: %{name}-@VERSION@.tar.gz
+BuildRequires: qt-devel
+BuildRoot: /var/tmp/%{name}-@VERSION@
+
+
+%package gui
+Summary: GUI control panels for LWNetRouter
+Group: Productivity/Multimedia/Other
+
+
+%description
+LWNetRouter is a centralized audio routing system for radio head-end network.
+
+
+%description gui
+GUI control panels for use the LWNetRouter.
+
+
+%prep
+
+
+%setup
+
+
+%build
+%configure
+make
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/var/cache/aoip
+
+%post
+if test "@DISTRO@" = "suse" ; then
+  PACKAGE_DOC_DIR=%_docdir/%{name}
+fi
+if test "@DISTRO@" = "redhat" ; then
+  PACKAGE_DOC_DIR=%_docdir/%{name}-@VERSION@
+fi
+if test ! -f /etc/lwnetrouter.conf ; then
+    cp $PACKAGE_DOC_DIR/lwnetrouter-sample.conf /etc/lwnetrouter.conf
+fi
+if [ -x %{_bindir}/systemctl ] ; then
+  systemctl daemon-reload
+fi
+
+
+%preun
+if [ -x %{_bindir}/systemctl ] ; then
+  systemctl stop lwnetrouter
+fi
+
+
+%postun
+if [ -x %{_bindir}/systemctl ] ; then
+  systemctl daemon-reload
+fi
+
+
+%post gui
+if test "@DISTRO@" = "suse" ; then
+  PACKAGE_DOC_DIR=%_docdir/lwrouter-gui
+fi
+if test "@DISTRO@" = "redhat" ; then
+  PACKAGE_DOC_DIR=%_docdir/lwnetrouter-gui-@VERSION@
+fi
+if test ! -f /etc/lwnetrouter.conf ; then
+    cp $PACKAGE_DOC_DIR/lwnetrouter-sample.conf /etc/lwnetrouter.conf
+fi
+if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
+  %{_bindir}/gtk-update-icon-cache -f --quiet %{_datadir}/icons/hicolor || :
+fi
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%defattr(-,root,root)
+%{_sbindir}/lwnetrouterd
+/usr/lib/systemd/system/lwnetrouter.service
+%dir /var/cache/aoip
+%doc AUTHORS
+%doc ChangeLog
+%doc COPYING 
+%doc NEWS 
+%doc README 
+%doc conf/lwnetrouter-sample.conf
+
+
+%files gui
+%{_bindir}/lwnetdelay
+%{_datadir}/icons/hicolor/48x48/apps/lwnetdelay.png
+%{_datadir}/applications/lwnetdelay.desktop
+%doc conf/lwnetrouter-sample.conf
+
+
+%changelog
+* Sat Nov 26 2016 Fred Gleason <fredg@paravelsystems.com>
+-- Initial RPM creation.

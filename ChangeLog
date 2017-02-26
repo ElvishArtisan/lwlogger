@@ -10,3 +10,5 @@
 	* Incremented the package version to 0.6.0.
 2017-02-26 Fred Gleason <fredg@paravelsystems.com>
 	* Added an 'Gpo<n>Action=' parameter to lwlogger.conf(5).
+2017-02-26 Fred Gleason <fredg@paravelsystems.com>
+	* Added man pages for lwlogger(8) and lwlogger.conf(5).

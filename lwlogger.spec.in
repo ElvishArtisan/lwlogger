@@ -85,6 +85,8 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_sbindir}/lwlogger
+%{_mandir}/man5/lwlogger.conf.5.gz
+%{_mandir}/man8/lwlogger.8.gz
 /usr/lib/systemd/system/lwlogger.service
 %dir /var/cache/aoip
 %doc AUTHORS

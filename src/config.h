@@ -41,11 +41,21 @@ class ConfigEntry
   QString gpioString(SyGpioEvent::Type type,Role role,int line);
   void setGpioString(SyGpioEvent::Type type,Role role,int line,
 		     const QString &str);
+  QString gpioAction(SyGpioEvent::Type type,int line) const;
+  void setGpioAction(SyGpioEvent::Type type,int line,const QString &filename);
+  int gpioWatchdogTimeout(SyGpioEvent::Type type,int line) const;
+  void setGpioWatchdogTimeout(SyGpioEvent::Type type,int line,int msec);
+  QString gpioWatchdogAction(SyGpioEvent::Type type,int line) const;
+  void setGpioWatchdogAction(SyGpioEvent::Type type,int line,
+			     const QString &filename);
 
  private:
   int entry_source_number;
   QString entry_log_dirs[2][SWITCHYARD_GPIO_BUNDLE_SIZE];
   QString entry_strings[2][ConfigEntry::LastRole][SWITCHYARD_GPIO_BUNDLE_SIZE];
+  QString entry_actions[2][SWITCHYARD_GPIO_BUNDLE_SIZE];
+  int entry_watchdog_timeouts[2][SWITCHYARD_GPIO_BUNDLE_SIZE];
+  QString entry_watchdog_actions[2][SWITCHYARD_GPIO_BUNDLE_SIZE];
 };
 
 
@@ -57,10 +67,16 @@ class Config
   Config(QObject *parent=0);
   bool logActive(SyGpioEvent *e);
   QString logDir(SyGpioEvent *e);
+  QString logFilename(SyGpioEvent *e);
   QString logLine(SyGpioEvent *e);
+  bool scriptActive(SyGpioEvent *e);
+  QString gpioAction(SyGpioEvent *e);
   bool load();
+  static QString gpioTypeText(SyGpioEvent::Type type);
+  static QString stateText(bool state);
 
  private:
+  QString TypeString(SyGpioEvent::Type) const;
   ConfigEntry *GetConfigEntry(unsigned srcnum) const;
   ConfigEntry::Role GetRole(SyGpioEvent *e) const;
   std::map<unsigned,ConfigEntry *> conf_entries;

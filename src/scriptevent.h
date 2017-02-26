@@ -1,8 +1,8 @@
-// lwlogger.h
+// scriptevent.h
 //
-// lwlogger(8) LiveWire routing daemon
+// Execute a script
 //
-//   (C) Copyright 2016 Fred Gleason <fredg@paravelsystems.com>
+//   (C) Copyright 2017 Fred Gleason <fredg@paravelsystems.com>
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as
@@ -19,39 +19,36 @@
 //   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef LWLOGGER_H
-#define LWLOGGER_H
+#ifndef SCRIPTEVENT_H
+#define SCRIPTEVENT_H
 
-#include <QList>
 #include <QObject>
-#include <QTimer>
+#include <QProcess>
 
-#include <sy/sygpio_server.h>
-
-#include "config.h"
-#include "scriptevent.h"
-
-#define LWLOGGER_USAGE "[options]\n"
-
-class MainObject : public QObject
+class ScriptEvent : public QObject
 {
- Q_OBJECT;
+  Q_OBJECT;
  public:
-  MainObject(QObject *parent=0);
+  ScriptEvent(QObject *parent=0);
+  ~ScriptEvent();
+  QProcess::ProcessState processState() const;
+
+ signals:
+  void finished();
+
+ public slots:
+  void start(const QString &pgm,const QStringList &args,const QString &logfile);
 
  private slots:
-  void gpioReceivedData(SyGpioEvent *e);
-  void scriptFinishedData();
-  void collectGarbageData();
+  void processFinishedData(int exit_code,QProcess::ExitStatus status);
+  void processErrorData(QProcess::ProcessError err);
 
  private:
-  void RunGpioScript(const QString &pgm,const QString &logname,SyGpioEvent *e);
-  void Log(const QString &dirname,const QString &msg) const;
-  QList<ScriptEvent *> main_script_list;
-  QTimer *main_garbage_timer;
-  SyGpioServer *main_gpio_server;
-  Config *main_config;
+  void Log(const QString &msg) const;
+  QProcess *script_process;
+  QString script_program;
+  QString script_logfile;
 };
 
 
-#endif  // LWLOGGER_H
+#endif  // SCRIPTEVENT_H

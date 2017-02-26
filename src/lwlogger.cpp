@@ -24,6 +24,7 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QStringList>
 
 #include "lwlogger.h"
 
@@ -36,6 +37,10 @@ MainObject::MainObject(QObject *parent)
   main_gpio_server=new SyGpioServer(new SyRouting(0,0),this);
   connect(main_gpio_server,SIGNAL(gpioReceived(SyGpioEvent *)),
 	  this,SLOT(gpioReceivedData(SyGpioEvent *)));
+
+  main_garbage_timer=new QTimer(this);
+  main_garbage_timer->setSingleShot(true);
+  connect(main_garbage_timer,SIGNAL(timeout()),this,SLOT(collectGarbageData()));
 }
 
 
@@ -44,6 +49,48 @@ void MainObject::gpioReceivedData(SyGpioEvent *e)
   if(main_config->logActive(e)) {
     Log(main_config->logDir(e),main_config->logLine(e));
   }
+  if(main_config->scriptActive(e)) {
+    RunGpioScript(main_config->gpioAction(e),main_config->logFilename(e),e);
+  }
+}
+
+
+void MainObject::scriptFinishedData()
+{
+  main_garbage_timer->start(1);
+}
+
+
+void MainObject::collectGarbageData()
+{
+  for(int i=main_script_list.size()-1;i>=0;i--) {
+    if(main_script_list.at(i)->processState()==QProcess::NotRunning) {
+      delete main_script_list.at(i);
+      main_script_list.erase(main_script_list.begin()+i);
+    }
+  }
+}
+
+
+void MainObject::RunGpioScript(const QString &pgm,const QString &logname,
+			       SyGpioEvent *e)
+{
+  /*
+  printf("Run script: %s\n",(const char *)pgm.toUtf8());
+  printf("   Logname: %s\n",(const char *)logname.toUtf8());
+  printf("      GPIO: %s\n",(const char *)e->dump().toUtf8());
+  */
+  QStringList args;
+  args.push_back(Config::gpioTypeText(e->type()));
+  args.push_back(QString().sprintf("%d",e->sourceNumber()));
+  args.push_back(QString().sprintf("%d",e->line()+1));
+  args.push_back(Config::stateText(e->state()));
+  args.push_back(Config::stateText(e->isPulse()));
+  args.push_back(e->originAddress().toString());
+  args.push_back(QString().sprintf("%d",0xFFFF&e->originPort()));
+
+  main_script_list.push_back(new ScriptEvent(this));
+  main_script_list.back()->start(pgm,args,logname);
 }
 
 
@@ -52,7 +99,7 @@ void MainObject::Log(const QString &dirname,const QString &msg) const
   FILE *f=NULL;
   QDateTime now=QDateTime::currentDateTime();
   QString filename=dirname+"/"+now.toString("yyyy-MM-dd")+".txt";
-
+  
   if((f=fopen(filename.toUtf8(),"a"))==NULL) {
     syslog(LOG_WARNING,"unable to open log file \"%s\"",
 	   (const char *)filename.toUtf8());

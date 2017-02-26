@@ -31,9 +31,11 @@ moc_%.cpp:	%.h
 sbin_PROGRAMS = lwlogger
 
 dist_lwlogger_SOURCES = config.cpp config.h\
-                        lwlogger.cpp lwlogger.h
+                        lwlogger.cpp lwlogger.h\
+                        scriptevent.cpp scriptevent.h
 
-nodist_lwlogger_SOURCES = moc_lwlogger.cpp
+nodist_lwlogger_SOURCES = moc_lwlogger.cpp\
+                          moc_scriptevent.cpp
 
 lwlogger_LDADD = @QT4CLI_LIBS@ @SWITCHYARD_LIBS@
 

@@ -8,3 +8,5 @@
 	* Enabled target 'make rpm'.
 2016-12-26 Fred Gleason <fredg@paravelsystems.com>
 	* Incremented the package version to 0.6.0.
+2017-02-26 Fred Gleason <fredg@paravelsystems.com>
+	* Added an 'Gpo<n>Action=' parameter to lwlogger.conf(5).

@@ -63,6 +63,45 @@ QString ConfigEntry::gpioString(SyGpioEvent::Type type,ConfigEntry::Role role,
 }
 
 
+QString ConfigEntry::gpioAction(SyGpioEvent::Type type,int line) const
+{
+  return entry_actions[type][line];
+}
+
+
+void ConfigEntry::setGpioAction(SyGpioEvent::Type type,int line,
+				const QString &filename)
+{
+  entry_actions[type][line]=filename;
+}
+
+
+int ConfigEntry::gpioWatchdogTimeout(SyGpioEvent::Type type,int line) const
+{
+  return entry_watchdog_timeouts[type][line];
+}
+
+
+void ConfigEntry::setGpioWatchdogTimeout(SyGpioEvent::Type type,int line,
+					 int msec)
+{
+  entry_watchdog_timeouts[type][line]=msec;
+}
+
+
+QString ConfigEntry::gpioWatchdogAction(SyGpioEvent::Type type,int line) const
+{
+  return entry_watchdog_actions[type][line];
+}
+
+
+void ConfigEntry::setGpioWatchdogAction(SyGpioEvent::Type type,int line,
+					const QString &filename)
+{
+  entry_watchdog_actions[type][line]=filename;
+}
+
+
 
 
 Config::Config(QObject *parent)
@@ -88,6 +127,29 @@ QString Config::logDir(SyGpioEvent *e)
 }
 
 
+QString Config::logFilename(SyGpioEvent *e)
+{
+  return logDir(e)+"/"+QDate::currentDate().toString("yyyy-MM-dd")+".txt";
+}
+
+
+bool Config::scriptActive(SyGpioEvent *e)
+{
+  ConfigEntry *entry=NULL;
+
+  if((entry=GetConfigEntry(e->sourceNumber()))==NULL) {
+    return false;
+  }
+  return !entry->gpioAction(e->type(),e->line()).isEmpty();
+}
+
+
+QString Config::gpioAction(SyGpioEvent *e)
+{
+  return conf_entries.at(e->sourceNumber())->gpioAction(e->type(),e->line());
+}
+
+
 QString Config::logLine(SyGpioEvent *e)
 {
   return conf_entries.at(e->sourceNumber())->
@@ -110,19 +172,43 @@ bool Config::load()
       for(int j=0;j<2;j++) {
 	SyGpioEvent::Type type=(SyGpioEvent::Type)j;
 	for(int k=0;k<SWITCHYARD_GPIO_BUNDLE_SIZE;k++) {
-	  e->setLogDir(type,k,p->stringValue(sections.at(i),QString().
-					       sprintf("Gpi%dLogDir",k+1)));
+	  e->setLogDir(type,k,p->stringValue(sections.at(i),TypeString(type)+
+					    QString().sprintf("%dLogDir",k+1)));
 	  e->setGpioString(type,ConfigEntry::Off,k,
-	    p->stringValue(sections.at(i),QString().sprintf("Gpi%dOff",k+1)));
+			   p->stringValue(sections.at(i),TypeString(type)+
+					  QString().sprintf("%dOff",k+1)));
 	  e->setGpioString(type,ConfigEntry::On,k,
-	    p->stringValue(sections.at(i),QString().sprintf("Gpi%dOn",k+1)));
+			   p->stringValue(sections.at(i),TypeString(type)+
+					  QString().sprintf("%dOn",k+1)));
 	  e->setGpioString(type,ConfigEntry::Pulse,k,
-	    p->stringValue(sections.at(i),QString().sprintf("Gpi%dPulse",k+1)));
+			   p->stringValue(sections.at(i),TypeString(type)+
+					  QString().sprintf("%dPulse",k+1)));
+	  e->setGpioAction(type,k,
+			   p->stringValue(sections.at(i),TypeString(type)+
+					  QString().sprintf("%dAction",k+1)));
 	}
       }
     }
   }
   return true;
+}
+
+
+QString Config::gpioTypeText(SyGpioEvent::Type type)
+{
+  if(type==SyGpioEvent::TypeGpi) {
+    return QString("gpi");
+  }
+  return QString("gpo");
+}
+
+
+QString Config::stateText(bool state)
+{
+  if(state) {
+    return QString("true");
+  }
+  return QString("false");
 }
 
 
@@ -147,4 +233,13 @@ ConfigEntry::Role Config::GetRole(SyGpioEvent *e) const
     return ConfigEntry::Off;
   }
   return ConfigEntry::Pulse;
+}
+
+
+QString Config::TypeString(SyGpioEvent::Type type) const
+{
+  if(type==SyGpioEvent::TypeGpi) {
+    return "Gpi";
+  }
+  return "Gpo";
 }

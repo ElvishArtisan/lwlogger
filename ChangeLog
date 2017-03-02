@@ -12,3 +12,6 @@
 	* Added an 'Gpo<n>Action=' parameter to lwlogger.conf(5).
 2017-02-26 Fred Gleason <fredg@paravelsystems.com>
 	* Added man pages for lwlogger(8) and lwlogger.conf(5).
+2017-03-01 Fred Gleason <fredg@paravelsystems.com>
+	* Modified 'src/lwlogger.cpp' to log timestamps with 1/10 second
+	precision.

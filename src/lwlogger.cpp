@@ -98,6 +98,11 @@ void MainObject::Log(const QString &dirname,const QString &msg) const
 {
   FILE *f=NULL;
   QDateTime now=QDateTime::currentDateTime();
+  int tenth=lround((double)now.time().msec()/100.0);
+  if(tenth==10) {
+    now.setTime(now.time().addSecs(1));
+    tenth=0;
+  }
   QString filename=dirname+"/"+now.toString("yyyy-MM-dd")+".txt";
   
   if((f=fopen(filename.toUtf8(),"a"))==NULL) {
@@ -105,7 +110,8 @@ void MainObject::Log(const QString &dirname,const QString &msg) const
 	   (const char *)filename.toUtf8());
     return;
   }
-  fprintf(f,"%s: %s\n",(const char *)now.toString("hh:mm:ss").toUtf8(),
+  fprintf(f,"%s: %s\n",(const char *)(now.toString("hh:mm:ss")+
+				      QString().sprintf(".%d",tenth)).toUtf8(),
 	  (const char *)msg.toUtf8());
   fclose(f);
 }

@@ -199,6 +199,98 @@
     </varlistentry>
     <varlistentry>
       <term>
+	Gpi<replaceable>linenum</replaceable>WatchdogAction=<replaceable>script</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Execute the <replaceable>script</replaceable> script when a
+	  Watchdog SET or RESET event is triggered for this GPI.
+	  The script will be called with the following arguments:
+	</para>
+	<para>
+	  <command><replaceable>script</replaceable></command>
+	  <arg choice='req'><replaceable>type</replaceable></arg>
+	  <arg choice='req'><replaceable>src-num</replaceable></arg>
+	  <arg choice='req'><replaceable>line</replaceable></arg>
+	  <arg choice='req'><replaceable>set-state</replaceable></arg>
+	</para>
+	<para>
+	  <variablelist>
+	    <varlistentry>
+	      <term>
+		<replaceable>type</replaceable>
+	      </term>
+	      <listitem>
+		<para>
+		  The type of event.
+		  (&quot;<computeroutput>gpi</computeroutput>&quot;
+		  or &quot;<computeroutput>gpo</computeroutput>&quot;)
+		</para>
+	      </listitem>
+	    </varlistentry>
+	    <varlistentry>
+	      <term>
+		<replaceable>src-num</replaceable>
+	      </term>
+	      <listitem>
+		<para>
+		  The LiveWire source number.
+		</para>
+	      </listitem>
+	    </varlistentry>
+	    <varlistentry>
+	      <term>
+		<replaceable>set-state</replaceable>
+	      </term>
+	      <listitem>
+		<para>
+		  The new Watchdog state.
+		  (&quot;<computeroutput>true</computeroutput>&quot; (Set)
+		  or &quot;<computeroutput>false</computeroutput>&quot; (Reset))
+		</para>
+	      </listitem>
+	    </varlistentry>
+	  </variablelist>
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	Gpi<replaceable>linenum</replaceable>WatchdogReset=<replaceable>text</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Write <replaceable>text</replaceable> to the log for each Watchdog
+	  RESET event triggered for line <replaceable>linenum</replaceable>.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	Gpi<replaceable>linenum</replaceable>WatchdogSet=<replaceable>text</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Write <replaceable>text</replaceable> to the log for each Watchdog
+	  SET event triggered for line <replaceable>linenum</replaceable>.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	Gpi<replaceable>linenum</replaceable>WatchdogTimeout=<replaceable>secs</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Trigger a Watchdog SET event if no GPI transition (On, Off or Pulse)
+	  has been received after <replaceable>secs</replaceable> seconds.
+	  Default value is <userinput>0</userinput>, which disables
+	  Watchdog events for this GPI.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
 	Gpo<replaceable>linenum</replaceable>LogDir=<replaceable>dirname</replaceable>
       </term>
       <listitem>
@@ -254,6 +346,62 @@
 	</para>
       </listitem>
     </varlistentry>
+
+
+
+
+    <varlistentry>
+      <term>
+	Gpo<replaceable>linenum</replaceable>WatchdogAction=<replaceable>script</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Execute the <replaceable>script</replaceable> script when a
+	  Watchdog SET or RESET event is triggered for this GPO.
+	  See the Gpi<replaceable>linenum</replaceable>WatchdogAction
+	  parameter for the list of arguments provided to
+	  <replaceable>script</replaceable>.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	Gpo<replaceable>linenum</replaceable>WatchdogReset=<replaceable>text</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Write <replaceable>text</replaceable> to the log for each Watchdog
+	  RESET event triggered for line <replaceable>linenum</replaceable>.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	Gpo<replaceable>linenum</replaceable>WatchdogSet=<replaceable>text</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Write <replaceable>text</replaceable> to the log for each Watchdog
+	  SET event triggered for line <replaceable>linenum</replaceable>.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	Gpo<replaceable>linenum</replaceable>WatchdogTimeout=<replaceable>secs</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Trigger a Watchdog SET event if no GPO transition (On, Off or Pulse)
+	  has been received after <replaceable>secs</replaceable> seconds.
+	  Default value is <userinput>0</userinput>, which disables
+	  Watchdog events for this GPO.
+	</para>
+      </listitem>
+    </varlistentry>
+
+
+
   </variablelist>
   </refsect1>
 
@@ -263,66 +411,106 @@
     &quot;1000&quot;:
   </para>
   <programlisting>
-    [1000]
+    [1000]GPO
     Gpi1LogDir=/var/www/html
     Gpi1On=GPI 1000-1 ON
     Gpi1Off=GPI 1000-1 OFF
     Gpi1Pulse=GPI 1000-1 PULSED
     Gpi1Action=/usr/local/bin/script.sh
+    Gpi1WatchdogSet=GPI 1000-1 Watchdog Set
+    Gpi1WatchdogReset=GPI 1000-1 Watchdog Reset
+    Gpi1WatchdogTimeout=5
+    Gpi1WatchdogAction=/usr/local/bin/script.sh
 
     Gpi2LogDir=/var/www/html
     Gpi2On=GPI 1000-2 ON
     Gpi2Off=GPI 1000-2 OFF
     Gpi2Pulse=GPI 1000-2 PULSED
     Gpi2Action=/usr/local/bin/script.sh
+    Gpi2WatchdogSet=GPI 1000-2 Watchdog Set
+    Gpi2WatchdogReset=GPI 1000-2 Watchdog Reset
+    Gpi2WatchdogTimeout=5
+    Gpi2WatchdogAction=/usr/local/bin/script.sh
 
     Gpi3LogDir=/var/www/html
     Gpi3On=GPI 1000-3 ON
     Gpi3Off=GPI 1000-3 OFF
     Gpi3Pulse=GPI 1000-3 PULSED
     Gpi3Action=/usr/local/bin/script.sh
+    Gpi3WatchdogSet=GPI 1000-3 Watchdog Set
+    Gpi3WatchdogReset=GPI 1000-3 Watchdog Reset
+    Gpi3WatchdogTimeout=5
+    Gpi3WatchdogAction=/usr/local/bin/script.sh
 
     Gpi4LogDir=/var/www/html
     Gpi4On=GPI 1000-4 ON
     Gpi4Off=GPI 1000-4 OFF
     Gpi4Pulse=GPI 1000-4 PULSED
     Gpi4Action=/usr/local/bin/script.sh
+    Gpi4WatchdogSet=GPI 1000-4 Watchdog Set
+    Gpi4WatchdogReset=GPI 1000-4 Watchdog Reset
+    Gpi4WatchdogTimeout=5
+    Gpi4WatchdogAction=/usr/local/bin/script.sh
 
     Gpi5LogDir=/var/www/html
     Gpi5On=GPI 1000-5 ON
     Gpi5Off=GPI 1000-5 OFF
     Gpi5Pulse=GPI 1000-5 PULSED
     Gpi5Action=/usr/local/bin/script.sh
+    Gpi5WatchdogSet=GPI 1000-5 Watchdog Set
+    Gpi5WatchdogReset=GPI 1000-5 Watchdog Reset
+    Gpi5WatchdogTimeout=5
+    Gpi5WatchdogAction=/usr/local/bin/script.sh
 
     Gpo1LogDir=/var/www/html
     Gpo1On=GPO 1000-1 ON
     Gpo1Off=GPO 1000-1 OFF
     Gpo1Pulse=GPO 1000-1 PULSED
     Gpo1Action=/usr/local/bin/script.sh
+    Gpo1WatchdogSet=GPO 1000-1 Watchdog Set
+    Gpo1WatchdogReset=GPO 1000-1 Watchdog Reset
+    Gpo1WatchdogTimeout=5
+    Gpo1WatchdogAction=/usr/local/bin/script.sh
 
     Gpo2LogDir=/var/www/html
     Gpo2On=GPO 1000-2 ON
     Gpo2Off=GPO 1000-2 OFF
     Gpo2Pulse=GPO 1000-2 PULSED
     Gpo2Action=/usr/local/bin/script.sh
+    Gpo2WatchdogSet=GPO 1000-2 Watchdog Set
+    Gpo2WatchdogReset=GPO 1000-2 Watchdog Reset
+    Gpo2WatchdogTimeout=5
+    Gpo2WatchdogAction=/usr/local/bin/script.sh
 
     Gpo3LogDir=/var/www/html
     Gpo3On=GPO 1000-3 ON
     Gpo3Off=GPO 1000-3 OFF
     Gpo3Pulse=GPO 1000-3 PULSED
     Gpo3Action=/usr/local/bin/script.sh
+    Gpo3WatchdogSet=GPO 1000-3 Watchdog Set
+    Gpo3WatchdogReset=GPO 1000-3 Watchdog Reset
+    Gpo3WatchdogTimeout=5
+    Gpo3WatchdogAction=/usr/local/bin/script.sh
 
     Gpo4LogDir=/var/www/html
     Gpo4On=GPO 1000-4 ON
     Gpo4Off=GPO 1000-4 OFF
     Gpo4Pulse=GPO 1000-4 PULSED
     Gpo4Action=/usr/local/bin/script.sh
+    Gpo4WatchdogSet=GPO 1000-4 Watchdog Set
+    Gpo4WatchdogReset=GPO 1000-4 Watchdog Reset
+    Gpo4WatchdogTimeout=5
+    Gpo4WatchdogAction=/usr/local/bin/script.sh
 
     Gpo5LogDir=/var/www/html
     Gpo5On=GPO 1000-5 ON
     Gpo5Off=GPO 1000-5 OFF
     Gpo5Pulse=GPO 1000-5 PULSED
     Gpo5Action=/usr/local/bin/script.sh
+    Gpo5WatchdogSet=GPO 1000-5 Watchdog Set
+    Gpo5WatchdogReset=GPO 1000-5 Watchdog Reset
+    Gpo5WatchdogTimeout=5
+    Gpo5WatchdogAction=/usr/local/bin/script.sh
  </programlisting>
 
   </refsect1>

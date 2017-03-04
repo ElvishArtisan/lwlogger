@@ -33,6 +33,10 @@ MainObject::MainObject(QObject *parent)
 {
   main_config=new Config();
   main_config->load();
+  connect(main_config,
+	 SIGNAL(watchdogStateChanged(ConfigEntry *,SyGpioEvent::Type,int,bool)),
+	  this,
+     SLOT(watchdogStateChangedData(ConfigEntry *,SyGpioEvent::Type,int,bool)));
 
   main_gpio_server=new SyGpioServer(new SyRouting(0,0),this);
   connect(main_gpio_server,SIGNAL(gpioReceived(SyGpioEvent *)),
@@ -46,6 +50,7 @@ MainObject::MainObject(QObject *parent)
 
 void MainObject::gpioReceivedData(SyGpioEvent *e)
 {
+  main_config->touchTimestamp(e);
   if(main_config->logActive(e)) {
     Log(main_config->logDir(e),main_config->logLine(e));
   }
@@ -72,6 +77,23 @@ void MainObject::collectGarbageData()
 }
 
 
+void MainObject::watchdogStateChangedData(ConfigEntry *e,SyGpioEvent::Type type,
+					  int line,bool state)
+{
+  ConfigEntry::Role role=ConfigEntry::WatchdogSet;
+  if(!state) {
+    role=ConfigEntry::WatchdogReset;
+  }
+  if(!e->gpioString(type,role,line).isEmpty()) {
+    Log(e->logDir(type,line),e->gpioString(type,role,line));
+  }
+  if(!e->gpioWatchdogAction(type,line).isEmpty()) {
+    RunWatchdogScript(e->gpioWatchdogAction(type,line),e->logDir(type,line),
+		      e->sourceNumber(),type,line,state);
+  }
+}
+
+
 void MainObject::RunGpioScript(const QString &pgm,const QString &logname,
 			       SyGpioEvent *e)
 {
@@ -88,6 +110,21 @@ void MainObject::RunGpioScript(const QString &pgm,const QString &logname,
   args.push_back(Config::stateText(e->isPulse()));
   args.push_back(e->originAddress().toString());
   args.push_back(QString().sprintf("%d",0xFFFF&e->originPort()));
+
+  main_script_list.push_back(new ScriptEvent(this));
+  main_script_list.back()->start(pgm,args,logname);
+}
+
+
+void MainObject::RunWatchdogScript(const QString &pgm,const QString &logname,
+				   int srcnum,SyGpioEvent::Type type,int line,
+				   bool state)
+{
+  QStringList args;
+  args.push_back(Config::gpioTypeText(type));
+  args.push_back(QString().sprintf("%d",srcnum));
+  args.push_back(QString().sprintf("%d",line+1));
+  args.push_back(Config::stateText(state));
 
   main_script_list.push_back(new ScriptEvent(this));
   main_script_list.back()->start(pgm,args,logname);

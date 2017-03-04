@@ -26,6 +26,25 @@
 ConfigEntry::ConfigEntry(int srcnum)
 {
   entry_source_number=srcnum;
+  QDateTime now(QDateTime::currentDateTime());
+  for(int i=0;i<2;i++) {
+    for(int j=0;j<SWITCHYARD_GPIO_BUNDLE_SIZE;j++) {
+      entry_watchdog_states[i][j]=false;
+      entry_timestamps[i][j]=now;
+    }
+  }
+}
+
+
+ConfigEntry *Config::configEntry(unsigned srcnum) const
+{
+  try {
+    return conf_entries.at(srcnum);
+  }
+  catch(...)
+    {
+    }
+  return NULL;
 }
 
 
@@ -102,10 +121,40 @@ void ConfigEntry::setGpioWatchdogAction(SyGpioEvent::Type type,int line,
 }
 
 
+bool ConfigEntry::gpioWatchdogState(SyGpioEvent::Type type,int line) const
+{
+  return entry_watchdog_states[type][line];
+}
+
+
+void ConfigEntry::setGpioWatchdogState(SyGpioEvent::Type type,int line,
+				       bool state)
+{
+  entry_watchdog_states[type][line]=state;
+}
+
+
+QDateTime ConfigEntry::timestamp(SyGpioEvent::Type type,int line)
+{
+  return entry_timestamps[type][line];
+}
+
+
+void ConfigEntry::touchTimestamp(SyGpioEvent::Type type,int line)
+{
+  entry_timestamps[type][line].setDate(QDate::currentDate());
+  entry_timestamps[type][line].setTime(QTime::currentTime());
+}
+
+
 
 
 Config::Config(QObject *parent)
+  : QObject(parent)
 {
+  conf_watchdog_timer=new QTimer(this);
+  connect(conf_watchdog_timer,SIGNAL(timeout()),
+	  this,SLOT(checkWatchdogsData()));
 }
 
 
@@ -113,7 +162,7 @@ bool Config::logActive(SyGpioEvent *e)
 {
   ConfigEntry *entry=NULL;
 
-  if((entry=GetConfigEntry(e->sourceNumber()))==NULL) {
+  if((entry=configEntry(e->sourceNumber()))==NULL) {
     return false;
   }
   return (!entry->logDir(e->type(),e->line()).isEmpty())&&
@@ -137,7 +186,7 @@ bool Config::scriptActive(SyGpioEvent *e)
 {
   ConfigEntry *entry=NULL;
 
-  if((entry=GetConfigEntry(e->sourceNumber()))==NULL) {
+  if((entry=configEntry(e->sourceNumber()))==NULL) {
     return false;
   }
   return !entry->gpioAction(e->type(),e->line()).isEmpty();
@@ -147,6 +196,17 @@ bool Config::scriptActive(SyGpioEvent *e)
 QString Config::gpioAction(SyGpioEvent *e)
 {
   return conf_entries.at(e->sourceNumber())->gpioAction(e->type(),e->line());
+}
+
+
+void Config::touchTimestamp(SyGpioEvent *e)
+{
+  try {
+    conf_entries.at(e->sourceNumber())->touchTimestamp(e->type(),e->line());
+  }
+  catch(...)
+    {
+    }
 }
 
 
@@ -183,13 +243,26 @@ bool Config::load()
 	  e->setGpioString(type,ConfigEntry::Pulse,k,
 			   p->stringValue(sections.at(i),TypeString(type)+
 					  QString().sprintf("%dPulse",k+1)));
+	  e->setGpioString(type,ConfigEntry::WatchdogSet,k,
+			   p->stringValue(sections.at(i),TypeString(type)+
+				     QString().sprintf("%dWatchdogSet",k+1)));
+	  e->setGpioString(type,ConfigEntry::WatchdogReset,k,
+			   p->stringValue(sections.at(i),TypeString(type)+
+				     QString().sprintf("%dWatchdogReset",k+1)));
 	  e->setGpioAction(type,k,
 			   p->stringValue(sections.at(i),TypeString(type)+
 					  QString().sprintf("%dAction",k+1)));
+	  e->setGpioWatchdogTimeout(type,k,
+		   p->intValue(sections.at(i),TypeString(type)+
+			       QString().sprintf("%dWatchdogTimeout",k+1)));
+	  e->setGpioWatchdogAction(type,k,
+       		   p->stringValue(sections.at(i),TypeString(type)+
+				  QString().sprintf("%dWatchdogAction",k+1)));
 	}
       }
     }
   }
+  conf_watchdog_timer->start(1000);
   return true;
 }
 
@@ -212,15 +285,33 @@ QString Config::stateText(bool state)
 }
 
 
-ConfigEntry *Config::GetConfigEntry(unsigned srcnum) const
+void Config::checkWatchdogsData()
 {
-  try {
-    return conf_entries.at(srcnum);
-  }
-  catch(...)
-    {
+  QDateTime now=QDateTime::currentDateTime();
+
+  for(std::map<unsigned,ConfigEntry *>::const_iterator it=conf_entries.begin();
+      it!=conf_entries.end();it++) {
+    ConfigEntry *ce=it->second;
+    for(int i=0;i<2;i++) {
+      SyGpioEvent::Type type=(SyGpioEvent::Type)i;
+      for(int j=0;j<SWITCHYARD_GPIO_BUNDLE_SIZE;j++) {
+	if(ce->gpioWatchdogTimeout(type,j)>0) {
+	  if((!ce->gpioWatchdogState(type,j))&&
+	     (ce->timestamp(type,j).addSecs(ce->gpioWatchdogTimeout(type,j))<
+	      now)) {
+	    ce->setGpioWatchdogState(type,j,true);
+	    emit watchdogStateChanged(ce,type,j,true);
+	  }
+	  if(ce->gpioWatchdogState(type,j)&&
+	     (ce->timestamp(type,j).addSecs(ce->gpioWatchdogTimeout(type,j))>
+	      now)) {
+	    ce->setGpioWatchdogState(type,j,false);
+	    emit watchdogStateChanged(ce,type,j,false);
+	  }
+	}
+      }
     }
-  return NULL;
+  }
 }
 
 

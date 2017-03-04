@@ -15,3 +15,9 @@
 2017-03-01 Fred Gleason <fredg@paravelsystems.com>
 	* Modified 'src/lwlogger.cpp' to log timestamps with 1/10 second
 	precision.
+2017-03-04 Fred Gleason <fredg@paravelsystems.com>
+	* Added 'Gpi<n>WatchdogSet=', 'Gpi<n>WatchdogReset=',
+	'Gpi<n>WatchdogTime=', 'Gpi<n>WatchdogAction=',
+	'Gpo<n>WatchdogSet=', 'Gpo<n>WatchdogReset=',
+	'Gpo<n>WatchdogTime=' and 'Gpo<n>WatchdogAction=' parameters
+	to lwlogger.conf(5).

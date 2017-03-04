@@ -43,9 +43,14 @@ class MainObject : public QObject
   void gpioReceivedData(SyGpioEvent *e);
   void scriptFinishedData();
   void collectGarbageData();
+  void watchdogStateChangedData(ConfigEntry *e,SyGpioEvent::Type type,
+				int line,bool state);
+
 
  private:
   void RunGpioScript(const QString &pgm,const QString &logname,SyGpioEvent *e);
+  void RunWatchdogScript(const QString &pgm,const QString &logname,
+			 int srcnum,SyGpioEvent::Type type,int line,bool state);
   void Log(const QString &dirname,const QString &msg) const;
   QList<ScriptEvent *> main_script_list;
   QTimer *main_garbage_timer;

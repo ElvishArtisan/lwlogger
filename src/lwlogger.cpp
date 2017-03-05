@@ -112,6 +112,8 @@ void MainObject::RunGpioScript(const QString &pgm,const QString &logname,
   args.push_back(QString().sprintf("%d",0xFFFF&e->originPort()));
 
   main_script_list.push_back(new ScriptEvent(this));
+  connect(main_script_list.back(),SIGNAL(finished()),
+	  this,SLOT(scriptFinishedData()));
   main_script_list.back()->start(pgm,args,logname);
 }
 
@@ -127,6 +129,8 @@ void MainObject::RunWatchdogScript(const QString &pgm,const QString &logname,
   args.push_back(Config::stateText(state));
 
   main_script_list.push_back(new ScriptEvent(this));
+  connect(main_script_list.back(),SIGNAL(finished()),
+	  this,SLOT(scriptFinishedData()));
   main_script_list.back()->start(pgm,args,logname);
 }
 

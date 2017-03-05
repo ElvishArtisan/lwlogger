@@ -21,3 +21,6 @@
 	'Gpo<n>WatchdogSet=', 'Gpo<n>WatchdogReset=',
 	'Gpo<n>WatchdogTime=' and 'Gpo<n>WatchdogAction=' parameters
 	to lwlogger.conf(5).
+2017-03-05 Fred Gleason <fredg@paravelsystems.com>
+	* Fixed bugs in 'src/lwlogger.cpp' that caused memory to be leaked
+	when running scripts.

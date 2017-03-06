@@ -24,3 +24,6 @@
 2017-03-05 Fred Gleason <fredg@paravelsystems.com>
 	* Fixed bugs in 'src/lwlogger.cpp' that caused memory to be leaked
 	when running scripts.
+2017-03-06 Fred Gleason <fredg@paravelsystems.com>
+	* Updated 'NEWS'.
+	* Incremented the package version to 0.7.0.

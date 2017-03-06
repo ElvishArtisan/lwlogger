@@ -1,3 +1,17 @@
 The NEWS file for the lwlogger package.
 
 -------------------------------------------------------------------------------
+v0.7.0 -- 03/06/2017
+
+Changes:
+Timestamp Precision. Added a tenth-second field to the log timestamp
+                     when logging GPIO events.
+
+Scripting Support.  Added support for executing a script in response to
+                    GPIO events.
+
+Watchdogs.  Added support for setting a watchdog timer on each GPIO event,
+            with the ability to write a log entry or run a script when such
+            timer expires.
+
+-------------------------------------------------------------------------------
